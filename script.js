@@ -4,7 +4,7 @@
 
 /////////////////////////////
 /*This looks like a good place to declare any state or global variables you might need*/
-
+let players = []
 ////////////////////////////
 
 
@@ -16,7 +16,13 @@
  */
 const fetchAllPlayers = async () => {
   //TODO
-
+  try {
+    const response = await fetch("https://fsa-puppy-bowl.herokuapp.com/api/2803-PUPPIES/players")
+    const data = await response.json()
+    return data.data.players
+  } catch (error) {
+    console.error(error)
+  }
 };
 
 /**
@@ -27,6 +33,13 @@ const fetchAllPlayers = async () => {
  */
 const fetchSinglePlayer = async (playerId) => {
   //TODO
+  try {
+    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/2803-PUPPIES/players/${playerId}`)
+    const data = await response.json()
+    return data.data.player
+  } catch (error) {
+    console.error(error)
+  }
 };
 
 /**
@@ -50,6 +63,19 @@ const fetchSinglePlayer = async (playerId) => {
 
 const addNewPlayer = async (newPlayer) => {
   //TODO
+  try {
+    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/2803-PUPPIES/players/${playerId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newPlayer)
+    })
+    const data = await response.json()
+    return data.data.player
+  } catch (error) {
+    console.error(error)
+  }
 };
 
 /**
@@ -68,7 +94,13 @@ const addNewPlayer = async (newPlayer) => {
 
 const removePlayer = async (playerId) => {
   //TODO
-
+  try {
+    const response = await fetch(`https://fsa-puppy-bowl.herokuapp.com/api/2803-PUPPIES/players/${playerId}`, {
+      method: 'DELETE'
+    })
+  } catch (error) {
+    console.error(error)
+  }
 };
 
 /**
@@ -91,10 +123,37 @@ const removePlayer = async (playerId) => {
  */
 const render = () => {
   // TODO
+  const container = document.getElementById('allPlayers')
+  container.innerHTML = ''
 
-  
+  if(!players || players.length === 0) {
+    container.innerHTML = '<p>No players found!</p>'
+    return
+  }
+
+  players.forEach((player) => {
+    const card = document.createElement('div')
+    card.innerHTML = `
+      <h3>${player.name}</h3>
+      <p>ID: ${player.id}</p>
+      <img src="${player.imageUrl}" alt="${player.name}" />
+      <button onclick="handleView"(${player.id})">More Details</button>
+      <button onclick="handleDelete(${player.id})">Remove</button>
+    `
+    container.appendChild(card)
+  })
 };
 
+const handleView = async (id) => {
+  const player = await fetchSinglePlayer(id)
+  renderSinglePlayer(player)
+}
+
+const handleDelete = async (id) => {
+  await removePlayer(id)
+  players = await fetchAllPlayers()
+  render()
+}
 /**
  * Updates html to display a single player.
  * A detailed page about the player is displayed with the following information:
@@ -111,7 +170,15 @@ const render = () => {
  */
 const renderSinglePlayer = (player) => {
   // TODO
-
+const container = document.getElementById('singlePlayer')
+container.innerHTML = `
+  <h2>${player.name}</h2>
+  <p>ID: ${player.id}</p>
+  <p>Breed: ${player.breed || 'N/A'}</p>
+  <p>Team: ${player.team?.name || 'Unassigned'}</p>
+  <img src="${player.imageUrl}" alt="${player.name}" />
+  <button onclick="render()">Back to all players</button
+`
 };
 
 
@@ -121,7 +188,7 @@ const renderSinglePlayer = (player) => {
  */
 const init = async () => {
   //Before we render, what do we always need...?
-
+  players= await fetchAllPlayers()
   render();
 
 };
